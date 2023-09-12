@@ -9,7 +9,6 @@
 #include <sys/wait.h>
 
 void debut_shell(void);
-size_t _strlen(char* str);
 ssize_t read_command(char **line, size_t *size_line);
 int execute_command(char *token, char **envp);
 int non_interactive_mode(char *token);

@@ -4,13 +4,11 @@ int main(void)
 {
 	size_t size_line = 0;
 	char *line = NULL;
-	char *token = NULL;
 
 	if (!isatty(0))
 	{
 		getline(&line, &size_line, stdin);
-		token = strtok(line, "\n");
-		return (non_interactive_mode(token));
+		return (non_interactive_mode(line));
 	}
 	debut_shell();
 	return (0);
@@ -23,29 +21,21 @@ int main(void)
 int non_interactive_mode(char *token)
 {
 	char **commands;
-	int pid, status = 0;
+	char *envp[] = {NULL};
 	int i;
-	char *argv[2];
-
 	commands = tokenize_string(token, " \n\t");
+
+	if (commands[0] && strcmp(commands[0], "exit") == 0)
+	{
+		free(commands);
+		exit(EXIT_SUCCESS);
+	}
+
 	for (i = 0; commands[i] != NULL; i++)
 	{
-		pid = fork();
-		if (pid == 0)
-		{
-			argv[0] = commands[i];
-			argv[1] = NULL;
-			if (execve(commands[i], argv, NULL) == -1)
-			{
-				write(STDOUT_FILENO, "No such file or directory\n", 27);
-				return (EXIT_FAILURE);
-			}
-		else
-		{
-			wait(&status);
-		}
-		}
+		execute_command(commands[i], envp);
 	}
+
 	free(commands);
 	return (0);
 }
@@ -54,15 +44,16 @@ char **tokenize_string(char *str, char *delimiters)
 {
 	int count = 0;
 	char *token;
-	char **result = malloc(20 * sizeof(char *)); // Assuming max 20 tokens for demonstration.
+	char **result = malloc(20 * sizeof(char *));
 
 	token = strtok(str, delimiters);
-	while (token != NULL) {
+	while (token != NULL)
+	{
 		result[count] = token;
 		count++;
 		token = strtok(NULL, delimiters);
 	}
 	result[count] = NULL;
 
-	return result;
+	return (result);
 }

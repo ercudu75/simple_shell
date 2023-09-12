@@ -1,29 +1,16 @@
 #include "shell.h"
 
-size_t _strlen(char *str)
-{
-	char *ptr = str;
-
-	while (*ptr != '\0')
-	{
-		ptr++;
-	}
-	return (ptr - str);
-}
-
 void debut_shell(void)
 {
 	char *line = NULL;
-	char *token = NULL;
-	char *commands[64];
+	char **commands;
 	char *envp[] = {NULL};
 	size_t size_line = 0;
 	ssize_t nread;
-	int command_count, i;
+	int i;
 
 	while (1)
 	{
-		command_count = 0;
 		nread = read_command(&line, &size_line);
 		if (nread == -1)
 		{
@@ -31,23 +18,20 @@ void debut_shell(void)
 			free(line);
 			exit(EXIT_FAILURE);
 		}
-		token = strtok(line, " \t\n");
-		while (token != NULL)
+		commands = tokenize_string(line, " \n\t");
+
+		if (commands[0] && strcmp(commands[0], "exit") == 0)
 		{
-			commands[command_count] = token;
-			command_count++;
-			token = strtok(NULL, " \t\n");
+			free(commands);
+			free(line);
+			exit(EXIT_SUCCESS);
 		}
-		commands[command_count] = NULL;
-		for (i = 0; i < command_count; i++)
+		for (i = 0; commands[i] != NULL; i++)
 		{
-			if (commands[i] && !strcmp(commands[i], "exit"))
-			{
-				free(line);
-				return;
-			}
 			execute_command(commands[i], envp);
 		}
+
+		free(commands);
 	}
 }
 
@@ -80,5 +64,4 @@ ssize_t read_command(char **line, size_t *size_line)
 	write(STDOUT_FILENO, "#cisfun$ ", 9);
 	return (getline(line, size_line, stdin));
 }
-
 

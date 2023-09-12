@@ -22,23 +22,47 @@ int main(void)
  */
 int non_interactive_mode(char *token)
 {
-	char *argv[2];
+	char **commands;
 	int pid, status = 0;
+	int i;
+	char *argv[2];
 
-	argv[0] = token;
-	argv[1] = NULL;
-	pid = fork();
-	if (pid == 0)
+	commands = tokenize_string(token, " \n\t");
+	for (i = 0; commands[i] != NULL; i++)
 	{
-		if (execve(token, argv, NULL) == -1)
+		pid = fork();
+		if (pid == 0)
 		{
-			write(STDOUT_FILENO, "No such file or directory\n", 27);
-			return (EXIT_FAILURE);
+			argv[0] = commands[i];
+			argv[1] = NULL;
+			if (execve(commands[i], argv, NULL) == -1)
+			{
+				write(STDOUT_FILENO, "No such file or directory\n", 27);
+				return (EXIT_FAILURE);
+			}
+		else
+		{
+			wait(&status);
 		}
-	else
-	{
-		wait(&status);
+		}
 	}
+	free(commands);
+	return (0);
+}
+
+char **tokenize_string(char *str, char *delimiters)
+{
+	int count = 0;
+	char *token;
+	char **result = malloc(20 * sizeof(char *)); // Assuming max 20 tokens for demonstration.
+
+	token = strtok(str, delimiters);
+	while (token != NULL) {
+		result[count] = token;
+		count++;
+		token = strtok(NULL, delimiters);
 	}
-	return (200);
+	result[count] = NULL;
+
+	return result;
 }

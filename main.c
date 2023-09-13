@@ -1,45 +1,96 @@
 #include "shell.h"
 
+/**
+ * main - Entry point for the shell program
+ *
+ * Return: Returns 0 on success, or status of the non_interactive_mode
+ */
 int main(void)
 {
 	size_t size_line = 0;
 	char *line = NULL;
+	int status = 0;
 
 	if (!isatty(0))
 	{
-		getline(&line, &size_line, stdin);
-		return (non_interactive_mode(line));
+		while (getline(&line, &size_line, stdin) != -1)
+		{
+			status = non_interactive_mode(line);
+		}
+		free(line);
+		return (status);
 	}
 	debut_shell();
 	return (0);
 }
 /**
- * commands not found return 127,
- * directory khaweya return 2,
- * exit return 0
+ * non_interactive_mode - Executes shell commands in non_nteractive_mode
+ * @token: The string containing commands separated by newline characters
+ *
+ * Return: Returns status.
  */
 int non_interactive_mode(char *token)
 {
 	char **commands;
-	char *envp[] = {NULL};
-	int i;
-	commands = tokenize_string(token, " \n\t");
+	int i, status;
+	char **single_command;
 
-	if (commands[0] && strcmp(commands[0], "exit") == 0)
-	{
-		free(commands);
-		exit(EXIT_SUCCESS);
-	}
+	commands = tokenize_string(token, "\n");
 
 	for (i = 0; commands[i] != NULL; i++)
 	{
-		execute_command(commands[i], envp);
+		single_command = tokenize_string(commands[i], " \t");
+		if (single_command[0])
+		{
+			if (!_strcmp(single_command[0], "exit"))
+			{
+				free(single_command);
+				free(commands);
+				exit(EXIT_SUCCESS);
+			}
+			status = execute_command_non_interactive(single_command[0], single_command);
+		}
+		free(single_command);
 	}
 
 	free(commands);
-	return (0);
+	return (status);
 }
+/**
+ * execute_command_non_interactive - Executes a single shell command
+ * @command: The command to execute
+ * @argv: The arguments for the command
+ *
+ * Return: Returns status.
+ */
+int execute_command_non_interactive(char *command, char **argv)
+{
+	int pid, status = 0;
 
+	pid = fork();
+	if (pid == 0)
+	{
+		if (execve(command, argv, NULL) == -1)
+		{
+			write_error();
+			exit(127);
+		}
+	}
+	else
+	{
+		wait(&status);
+		if (WIFEXITED(status))
+			status = WEXITSTATUS(status);
+	}
+	return (status);
+}
+/**
+ * tokenize_string - Splits a string into tokens
+ * @str: The string to tokenize
+ * @delimiters: The delimiters to use for tokenization
+ *
+ * Return: Returns result.
+ */
 char **tokenize_string(char *str, char *delimiters)
 {
 	int count = 0;

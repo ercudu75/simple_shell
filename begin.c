@@ -1,5 +1,11 @@
 #include "shell.h"
 
+/**
+ * debut_shell - Starts the shell's main loop
+ *
+ * Description: Initializes the shell, handles user input,
+ * tokenizes commands and executes them.
+ */
 void debut_shell(void)
 {
 	char *line = NULL;
@@ -7,7 +13,7 @@ void debut_shell(void)
 	char *envp[] = {NULL};
 	size_t size_line = 0;
 	ssize_t nread;
-	int i;
+	char *line_copy;
 
 	while (1)
 	{
@@ -18,50 +24,65 @@ void debut_shell(void)
 			free(line);
 			exit(EXIT_FAILURE);
 		}
-		commands = tokenize_string(line, " \n\t");
-
+		line_copy = _strdup(line);
+		commands = tokenize_string(line_copy, " \n\t");
 		if (commands[0] && strcmp(commands[0], "exit") == 0)
 		{
 			free(commands);
 			free(line);
 			exit(EXIT_SUCCESS);
 		}
-		for (i = 0; commands[i] != NULL; i++)
-		{
-			execute_command(commands[i], envp);
-		}
-
-		free(commands);
+		execute_command(commands[0], envp, commands);
+		free(line_copy);
 	}
 }
-
-int execute_command(char *token, char **envp)
+/**
+ * execute_command - Executes a given shell command
+ * @command: The command to execute
+ * @envp: The environment variables
+ * @argv: The command arguments
+ *
+ * Return: Returns the status code of the executed command.
+ */
+int execute_command(char *command, char **envp, char **argv)
 {
 	int pid, status = 0;
-	char *argv[2];
-
-	argv[0] = token;
-	argv[1] = NULL;
 
 	pid = fork();
 	if (pid == 0)
 	{
-		if (execve(token, argv, envp) == -1)
+		if (execve(command, argv, envp) == -1)
 		{
-			write(STDOUT_FILENO, "Command not found\n", 18);
-			exit(EXIT_FAILURE);
+			write_error();
+			exit(127);
 		}
 	}
 	else
 	{
 		wait(&status);
+		if (WIFEXITED(status))
+			status = WEXITSTATUS(status);
 	}
 	return (status);
 }
-
+/**
+ * read_command - Reads a line of command from the user
+ * @line: The line buffer to store command
+ * @size_line: The size of the line buffer
+ *
+ * Return: Returns the number of characters read.
+ */
 ssize_t read_command(char **line, size_t *size_line)
 {
 	write(STDOUT_FILENO, "#cisfun$ ", 9);
 	return (getline(line, size_line, stdin));
 }
-
+/**
+ * write_error - Writes an error message to STDERR
+ *
+ * Description: Writes an error message
+ */
+void write_error(void)
+{
+	write(STDERR_FILENO, "./hsh: No such file or directory", 35);
+}

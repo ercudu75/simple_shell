@@ -28,4 +28,7 @@ char *_strdup(const char *src);
 int _strlen(char *str);
 int _strcmp(char *s1, char *s2);
 
+/* free memory leak*/
+void free_array(char **array);
+
 #endif

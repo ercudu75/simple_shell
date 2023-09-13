@@ -34,6 +34,7 @@ void debut_shell(void)
 		}
 		execute_command(commands[0], envp, commands);
 		free(line_copy);
+		free(commands);
 	}
 }
 /**
@@ -54,6 +55,7 @@ int execute_command(char *command, char **envp, char **argv)
 		if (execve(command, argv, envp) == -1)
 		{
 			write_error();
+			free_array(argv);
 			exit(127);
 		}
 	}
@@ -85,4 +87,14 @@ ssize_t read_command(char **line, size_t *size_line)
 void write_error(void)
 {
 	write(STDERR_FILENO, "./hsh: No such file or directory", 35);
+}
+
+void free_array(char **array)
+{
+	int i;
+	for (i = 0; array[i] != NULL; i++)
+	{
+		free(array[i]);
+	}
+	free(array);
 }

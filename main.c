@@ -97,6 +97,11 @@ char **tokenize_string(char *str, char *delimiters)
 	char *token;
 	char **result = malloc(20 * sizeof(char *));
 
+	if (result == NULL)
+	{
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
 	token = strtok(str, delimiters);
 	while (token != NULL)
 	{

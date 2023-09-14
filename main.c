@@ -10,12 +10,15 @@ int main(void)
 	size_t size_line = 0;
 	char *line = NULL;
 	int status = 0;
+	char *line_copy;
 
 	if (!isatty(0))
 	{
 		while (getline(&line, &size_line, stdin) != -1)
 		{
-			status = non_interactive_mode(line);
+			line_copy = _strdup(line);
+			status = non_interactive_mode(line_copy);
+			free(line_copy);
 		}
 		free(line);
 		return (status);
@@ -45,10 +48,13 @@ int non_interactive_mode(char *token)
 			if (!_strcmp(single_command[0], "exit"))
 			{
 				free(single_command);
-				free(commands);
 				exit(EXIT_SUCCESS);
 			}
 			status = execute_command_non_interactive(single_command[0], single_command);
+		}
+		else
+		{
+			status = 0;
 		}
 		free(single_command);
 	}

@@ -14,7 +14,11 @@ char *_strdup(const char *src)
 
 	while (src[len])
 		len++;
+
 	str = malloc(len + 1);
+	if (!str)
+		return (NULL);
+
 	p = str;
 	while (*src)
 		*p++ = *src++;

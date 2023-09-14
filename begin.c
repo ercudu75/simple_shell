@@ -8,12 +8,9 @@
  */
 void debut_shell(void)
 {
-	char *line = NULL;
-	char **commands;
-	char *envp[] = {NULL};
+	char *line = NULL, **commands, *line_copy, *envp[] = {NULL}, *line_copy;
 	size_t size_line = 0;
 	ssize_t nread;
-	char *line_copy;
 
 	while (1)
 	{
@@ -22,19 +19,27 @@ void debut_shell(void)
 		{
 			perror("getline");
 			free(line);
+			line = NULL;
 			exit(EXIT_FAILURE);
 		}
 		line_copy = _strdup(line);
 		commands = tokenize_string(line_copy, " \n\t");
-		if (commands[0] && strcmp(commands[0], "exit") == 0)
+		if (commands[0])
 		{
-			free(commands);
-			free(line);
-			exit(EXIT_SUCCESS);
+			if (_strcmp(commands[0], "exit") == 0)
+			{
+				free(commands);
+				free(line_copy);
+				free(line);
+				line = NULL;
+				exit(EXIT_SUCCESS);
+			}
+			execute_command(commands[0], envp, commands);
 		}
-		execute_command(commands[0], envp, commands);
-		free(line_copy);
 		free(commands);
+		free(line_copy);
+		free(line);
+		line = NULL;
 	}
 }
 /**
@@ -54,8 +59,8 @@ int execute_command(char *command, char **envp, char **argv)
 	{
 		if (execve(command, argv, envp) == -1)
 		{
-			write_error();
 			free_array(argv);
+			write_error();
 			exit(127);
 		}
 	}
@@ -86,7 +91,7 @@ ssize_t read_command(char **line, size_t *size_line)
  */
 void write_error(void)
 {
-	write(STDERR_FILENO, "./hsh: No such file or directory", 35);
+	write(STDERR_FILENO, "./hsh: No such file or directory\n", 34);
 }
 /**
  * free_array - Frees memory allocated for an array of strings.

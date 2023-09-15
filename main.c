@@ -48,6 +48,8 @@ int non_interactive_mode(char *token)
 			if (!_strcmp(single_command[0], "exit"))
 			{
 				free(single_command);
+				free(commands);
+				free(token);
 				exit(EXIT_SUCCESS);
 			}
 			status = execute_command_non_interactive(single_command[0], single_command);
@@ -78,6 +80,7 @@ int execute_command_non_interactive(char *command, char **argv)
 	{
 		if (execve(command, argv, NULL) == -1)
 		{
+			free_array(argv);
 			write_error();
 			exit(127);
 		}

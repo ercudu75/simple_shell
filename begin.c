@@ -8,7 +8,8 @@
  */
 void debut_shell(void)
 {
-	char *line = NULL, **commands, *line_copy, *envp[] = {NULL}, *line_copy;
+	char *line = NULL, **commands, *envp[] = {NULL};
+	char *line_copy;
 	size_t size_line = 0;
 	ssize_t nread;
 
@@ -103,6 +104,8 @@ void free_array(char **array)
 {
 	int i;
 
+	if (!array)
+		return;
 	for (i = 0; array[i] != NULL; i++)
 	{
 		free(array[i]);

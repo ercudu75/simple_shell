@@ -10,17 +10,18 @@ int main(void)
 	size_t size_line = 0;
 	char *line = NULL;
 	int status = 0;
-	char *line_copy;
 
 	if (!isatty(0))
 	{
 		while (getline(&line, &size_line, stdin) != -1)
 		{
-			line_copy = _strdup(line);
-			status = non_interactive_mode(line_copy);
-			free(line_copy);
+			non_interactive_mode(line, &status);
 		}
-		free(line);
+		if (line)
+		{
+			free(line);
+			line = NULL;
+		}
 		return (status);
 	}
 	debut_shell();
@@ -29,69 +30,55 @@ int main(void)
 /**
  * non_interactive_mode - Executes shell commands in non_nteractive_mode
  * @token: The string containing commands separated by newline characters
- *
+ * @status: integer store the number
  * Return: Returns status.
  */
-int non_interactive_mode(char *token)
+void non_interactive_mode(char *token, int *status)
 {
-	char **commands;
-	int i, status;
 	char **single_command;
 
-	commands = tokenize_string(token, "\n");
-
-	for (i = 0; commands[i] != NULL; i++)
+	token[strlen(token) - 1] = '\0';
+	single_command = tokenize_string(token, " \t");
+	if (single_command[0])
 	{
-		single_command = tokenize_string(commands[i], " \t");
-		if (single_command[0])
+		if (!_strcmp(single_command[0], "exit"))
 		{
-			if (!_strcmp(single_command[0], "exit"))
-			{
-				free(single_command);
-				free(commands);
-				free(token);
-				exit(EXIT_SUCCESS);
-			}
-			status = execute_command_non_interactive(single_command[0], single_command);
+			free_array(single_command);
+			free(token);
+			exit(*status);
 		}
-		else
-		{
-			status = 0;
-		}
-		free(single_command);
+		execute_command_non_interactive(single_command[0], single_command, status);
 	}
-
-	free(commands);
-	return (status);
+	free_array(single_command);
 }
 /**
  * execute_command_non_interactive - Executes a single shell command
  * @command: The command to execute
  * @argv: The arguments for the command
+ * @status: integer store the number
  *
  * Return: Returns status.
  */
-int execute_command_non_interactive(char *command, char **argv)
+void execute_command_non_interactive(char *command, char **argv, int *status)
 {
-	int pid, status = 0;
+	int pid;
 
+	*status = 0;
 	pid = fork();
 	if (pid == 0)
 	{
 		if (execve(command, argv, NULL) == -1)
 		{
-			free_array(argv);
-			write_error();
-			exit(127);
+			write_error(command);
+			*status = 127;
 		}
 	}
 	else
 	{
-		wait(&status);
-		if (WIFEXITED(status))
-			status = WEXITSTATUS(status);
+		wait(status);
+		if (WIFEXITED(*status))
+			*status = WEXITSTATUS(*status);
 	}
-	return (status);
 }
 /**
  * tokenize_string - Splits a string into tokens
@@ -114,7 +101,7 @@ char **tokenize_string(char *str, char *delimiters)
 	token = strtok(str, delimiters);
 	while (token != NULL)
 	{
-		result[count] = token;
+		result[count] = _strdup(token);
 		count++;
 		token = strtok(NULL, delimiters);
 	}

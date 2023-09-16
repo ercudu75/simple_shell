@@ -10,18 +10,17 @@
 
 /* built function*/
 void debut_shell(void);
-int non_interactive_mode(char *token);
+void non_interactive_mode(char *token, int *status);
 ssize_t read_command(char **line, size_t *size_line);
 
 /* execute command*/
 int execute_command(char *command, char **envp, char **argv);
-int execute_command_non_interactive(char *command, char **argv);
-
+void execute_command_non_interactive(char *command, char **argv,int *status);
 /* handle line and delimiters(/n...)*/
 char **tokenize_string(char *str, char *delimiters);
 
 /* write messages */
-void write_error(void);
+void write_error(char *command);
 
 /* string fucntion*/
 char *_strdup(const char *src);

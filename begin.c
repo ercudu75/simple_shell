@@ -60,9 +60,7 @@ int execute_command(char *command, char **envp, char **argv)
 	{
 		if (execve(command, argv, envp) == -1)
 		{
-			free_array(argv);
-			write_error();
-			exit(127);
+			write_error(command);
 		}
 	}
 	else
@@ -88,11 +86,14 @@ ssize_t read_command(char **line, size_t *size_line)
 /**
  * write_error - Writes an error message to STDERR
  *
+ * @command: command
  * Description: Writes an error message
  */
-void write_error(void)
+void write_error(char *command)
 {
-	write(STDERR_FILENO, "./hsh: No such file or directory\n", 34);
+	write(STDERR_FILENO, "./hsh: 1: ", 10);
+	write(STDERR_FILENO, command, _strlen(command));
+	write(STDERR_FILENO, ": not found\n", 12);
 }
 /**
  * free_array - Frees memory allocated for an array of strings.

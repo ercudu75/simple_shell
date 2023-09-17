@@ -14,8 +14,8 @@ void non_interactive_mode(char *token, int *status);
 ssize_t read_command(char **line, size_t *size_line);
 
 /* execute command*/
-int execute_command(char *command, char **envp, char **argv);
 void execute_command_non_interactive(char *command, char **argv,int *status);
+void _execvep(char **commands, char **envp, int *status);
 /* handle line and delimiters(/n...)*/
 char **tokenize_string(char *str, char *delimiters);
 
@@ -26,6 +26,9 @@ void write_error(char *command);
 char *_strdup(const char *src);
 int _strlen(char *str);
 int _strcmp(char *s1, char *s2);
+char *_strncpy(char *dest, char *src, int n);
+char *_strncat(char *dest, char *src, int n);
+
 
 /* free memory leak*/
 void free_array(char **array);

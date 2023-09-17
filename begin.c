@@ -6,12 +6,19 @@
  * Description: Initializes the shell, handles user input,
  * tokenizes commands and executes them.
  */
+
+/**
+ * debut_shell - Starts the shell's main loop
+ *
+ * Description: Initializes the shell, handles user input,
+ * tokenizes commands and executes them.
+ */
 void debut_shell(void)
 {
 	char *line = NULL, **commands, *envp[] = {NULL};
-	char *line_copy;
 	size_t size_line = 0;
 	ssize_t nread;
+	int status = 0;
 
 	while (1)
 	{
@@ -23,54 +30,28 @@ void debut_shell(void)
 			line = NULL;
 			exit(EXIT_FAILURE);
 		}
-		line_copy = _strdup(line);
-		commands = tokenize_string(line_copy, " \n\t");
+		commands = tokenize_string(line, " \n\t");
 		if (commands[0])
 		{
 			if (_strcmp(commands[0], "exit") == 0)
 			{
-				free(commands);
-				free(line_copy);
+				free_array(commands);
 				free(line);
 				line = NULL;
 				exit(EXIT_SUCCESS);
+				break;
 			}
-			execute_command(commands[0], envp, commands);
+			else {
+				_execvep(commands, envp, &status);
+			}
 		}
-		free(commands);
-		free(line_copy);
+		free_array(commands);
 		free(line);
 		line = NULL;
 	}
 }
-/**
- * execute_command - Executes a given shell command
- * @command: The command to execute
- * @envp: The environment variables
- * @argv: The command arguments
- *
- * Return: Returns the status code of the executed command.
- */
-int execute_command(char *command, char **envp, char **argv)
-{
-	int pid, status = 0;
 
-	pid = fork();
-	if (pid == 0)
-	{
-		if (execve(command, argv, envp) == -1)
-		{
-			write_error(command);
-		}
-	}
-	else
-	{
-		wait(&status);
-		if (WIFEXITED(status))
-			status = WEXITSTATUS(status);
-	}
-	return (status);
-}
+
 /**
  * read_command - Reads a line of command from the user
  * @line: The line buffer to store command

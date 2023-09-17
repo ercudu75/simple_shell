@@ -36,6 +36,7 @@ int main(void)
 void non_interactive_mode(char *token, int *status)
 {
 	char **single_command;
+	char *envp[] = {NULL};
 
 	token[strlen(token) - 1] = '\0';
 	single_command = tokenize_string(token, " \t");
@@ -47,39 +48,11 @@ void non_interactive_mode(char *token, int *status)
 			free(token);
 			exit(*status);
 		}
-		execute_command_non_interactive(single_command[0], single_command, status);
+		_execvep(single_command, envp, status);
 	}
 	free_array(single_command);
 }
-/**
- * execute_command_non_interactive - Executes a single shell command
- * @command: The command to execute
- * @argv: The arguments for the command
- * @status: integer store the number
- *
- * Return: Returns status.
- */
-void execute_command_non_interactive(char *command, char **argv, int *status)
-{
-	int pid;
 
-	*status = 0;
-	pid = fork();
-	if (pid == 0)
-	{
-		if (execve(command, argv, NULL) == -1)
-		{
-			write_error(command);
-			*status = 127;
-		}
-	}
-	else
-	{
-		wait(status);
-		if (WIFEXITED(*status))
-			*status = WEXITSTATUS(*status);
-	}
-}
 /**
  * tokenize_string - Splits a string into tokens
  * @str: The string to tokenize
@@ -109,3 +82,4 @@ char **tokenize_string(char *str, char *delimiters)
 
 	return (result);
 }
+

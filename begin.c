@@ -6,13 +6,6 @@
  * Description: Initializes the shell, handles user input,
  * tokenizes commands and executes them.
  */
-
-/**
- * debut_shell - Starts the shell's main loop
- *
- * Description: Initializes the shell, handles user input,
- * tokenizes commands and executes them.
- */
 void debut_shell(void)
 {
 	char *line = NULL, **commands, *envp[] = {NULL};
@@ -41,7 +34,8 @@ void debut_shell(void)
 				exit(EXIT_SUCCESS);
 				break;
 			}
-			else {
+			else
+			{
 				_execvep(commands, envp, &status);
 			}
 		}

@@ -48,6 +48,12 @@ void non_interactive_mode(char *token, int *status)
 			free(token);
 			exit(*status);
 		}
+		else if (!_strcmp(single_command[0], "env"))
+		{
+			print_env_var();
+			*status = 0;
+		}
+		else
 		_execvep(single_command, envp, status);
 	}
 	free_array(single_command);

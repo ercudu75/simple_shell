@@ -141,7 +141,7 @@ void print_env_var(void)
 {
 	char **env = environ;
 
-	while (env != NULL)
+	while (*env != NULL)
 	{
 		write(STDOUT_FILENO, *env, strlen(*env));
 		write(STDOUT_FILENO, "\n", 1);

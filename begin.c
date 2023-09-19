@@ -26,13 +26,18 @@ void debut_shell(void)
 		commands = tokenize_string(line, " \n\t");
 		if (commands[0])
 		{
-			if (_strcmp(commands[0], "exit") == 0)
+			if (!_strcmp(commands[0], "exit"))
 			{
 				free_array(commands);
 				free(line);
 				line = NULL;
 				exit(EXIT_SUCCESS);
 				break;
+			}
+			else if (!_strcmp(commands[0], "env"))
+			{
+				print_env_var();
+				status = 0;
 			}
 			else
 			{

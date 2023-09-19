@@ -132,3 +132,19 @@ char *mygetenv(const char *path)
 
 	return (NULL);
 }
+/**
+ * print_env_var - Prints the environment variables to stdout
+ *
+ * Return: void
+ */
+void print_env_var(void)
+{
+	char **env = environ;
+
+	while (env != NULL)
+	{
+		write(STDOUT_FILENO, *env, strlen(*env));
+		write(STDOUT_FILENO, "\n", 1);
+		env++;
+	}
+}

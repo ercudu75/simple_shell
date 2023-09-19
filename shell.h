@@ -8,6 +8,8 @@
 #include<string.h>
 #include <sys/wait.h>
 
+extern char **environ;
+
 /* built function*/
 void debut_shell(void);
 void non_interactive_mode(char *token, int *status);
@@ -18,6 +20,7 @@ void execute_command_non_interactive(char *command, char **argv, int *status);
 void _execvep(char **commands, char **envp, int *status);
 void search_path(char **commands, char **envp, int *status);
 void wait_child_process(int *status);
+char *mygetenv(const char *path);
 
 /* handle line and delimiters(/n...)*/
 char **tokenize_string(char *str, char *delimiters);

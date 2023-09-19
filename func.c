@@ -80,6 +80,12 @@ void search_path(char **commands, char **envp, int *status)
 	}
 }
 
+/**
+ * wait_child_process - Waits for a child proc to end and get its exit status
+ * @status: Pointer to the status variable to store the exit status
+ *
+ * Return: void
+ */
 void wait_child_process(int *status)
 {
 	int child_status;

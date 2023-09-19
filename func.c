@@ -6,70 +6,152 @@
  * @envp: The environment variables
  * @status: The pointer to an int where the status will be stored
  */
+/*void _execvep(char **commands, char **envp, int *status)
+  {
+  char *full_path, *token, *path_env;
+  int pid, found = 0;
+
+  pid = fork();
+
+  if (pid == 0)
+  {
+  if (access(commands[0], X_OK) == 0)
+  {
+  execve(commands[0], commands, envp);
+  exit(0);
+  }
+
+  path_env = getenv("PATH");
+  if (path_env != NULL)
+  {
+  char *path_env_copy = strdup(path_env);
+  token = strtok(path_env_copy, ":");
+
+  while (token != NULL && !found)
+  {
+  full_path = malloc(strlen(token) + strlen(commands[0]) + 2);
+  if (full_path != NULL)
+  {
+  strcpy(full_path, token);
+  strcat(full_path, "/");
+  strcat(full_path, commands[0]);
+
+  if (access(full_path, X_OK) == 0)
+  {
+  execve(full_path, commands, envp);
+  found = 1;
+  }
+
+  free(full_path);
+  }
+
+  token = strtok(NULL, ":");
+  }
+
+  free(path_env_copy);
+  }
+
+  if (!found)
+  {
+ *status = 127;
+ write_error(commands[0]);
+ exit(127);
+ }
+ }
+ else
+ {
+ int child_status;
+ if (wait(&child_status) == -1)
+ {
+ perror("wait");
+ exit(EXIT_FAILURE);
+ }
+
+ if (WIFEXITED(child_status))
+ {
+ *status = WEXITSTATUS(child_status);
+ }
+ }
+ }*/
 void _execvep(char **commands, char **envp, int *status)
 {
-	char *full_path, *token, *path_env;
-	int pid, found = 0;
+	int pid;
 
 	pid = fork();
 
 	if (pid == 0)
 	{
 		if (access(commands[0], X_OK) == 0)
-        {
-            execve(commands[0], commands, envp);
-            exit(0);
-        }
-
-		path_env = getenv("PATH");
-		if (path_env != NULL)
 		{
-			char *path_env_copy = strdup(path_env);
-			token = strtok(path_env_copy, ":");
-			
-			while (token != NULL && !found)
-			{
-				full_path = malloc(strlen(token) + strlen(commands[0]) + 2);
-				if (full_path != NULL)
-				{
-					strcpy(full_path, token);
-					strcat(full_path, "/");
-					strcat(full_path, commands[0]);
-
-					if (access(full_path, X_OK) == 0)
-					{
-						execve(full_path, commands, envp);
-						found = 1;
-					}
-
-					free(full_path);
-				}
-				
-				token = strtok(NULL, ":");
-			}
-
-			free(path_env_copy);
+			execve(commands[0], commands, envp);
+			exit(0);
 		}
 
-		if (!found)
-		{
-			*status = 127;
-			write_error(commands[0]);
-			exit(127);
-		}
+		search_path(commands, envp, status);
 	}
 	else
 	{
-		int child_status;
-		if (wait(&child_status) == -1)
-		{
-			perror("wait");
-			exit(EXIT_FAILURE);
-		}
-
-		if (WIFEXITED(child_status))
-		{
-			*status = WEXITSTATUS(child_status);
-		}
+		wait_child_process(status);
 	}
 }
+
+void search_path(char **commands, char **envp, int *status)
+{
+	char *full_path, *token, *path_env;
+	int found = 0;
+
+	path_env = getenv("PATH");
+	if (path_env != NULL)
+	{
+		char *path_env_copy = strdup(path_env);
+		
+		token = strtok(path_env_copy, ":");
+
+		while (token != NULL && !found)
+		{
+			full_path = malloc(strlen(token) + strlen(commands[0]) + 2);
+			if (full_path != NULL)
+			{
+				strcpy(full_path, token);
+				strcat(full_path, "/");
+				strcat(full_path, commands[0]);
+
+				if (access(full_path, X_OK) == 0)
+				{
+					execve(full_path, commands, envp);
+					found = 1;
+				}
+
+				free(full_path);
+			}
+
+			token = strtok(NULL, ":");
+		}
+
+		free(path_env_copy);
+	}
+
+	if (!found)
+	{
+		*status = 127;
+		write_error(commands[0]);
+		exit(127);
+	}
+}
+
+void wait_child_process(int *status)
+{
+	int child_status;
+
+	if (wait(&child_status) == -1)
+	{
+		perror("wait");
+		exit(EXIT_FAILURE);
+	}
+
+	if (WIFEXITED(child_status))
+	{
+		*status = WEXITSTATUS(child_status);
+	}
+}
+

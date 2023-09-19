@@ -27,6 +27,7 @@ char **tokenize_string(char *str, char *delimiters);
 
 /* write messages */
 void write_error(char *command);
+void print_env_var(void);
 
 /* string fucntion*/
 char *_strdup(const char *src);

@@ -101,7 +101,12 @@ void wait_child_process(int *status)
 		*status = WEXITSTATUS(child_status);
 	}
 }
-
+/**
+ * mygetenv - Searches for an environment variable and returns its value
+ * @path: The name of the environment variable to search for
+ *
+ * Return: Ptr to the value of the environment variable, or NULL if not found
+ */
 char *mygetenv(const char *path)
 {
 	int i, j;

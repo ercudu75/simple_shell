@@ -28,7 +28,14 @@ void _execvep(char **commands, char **envp, int *status)
 	}
 }
 
-
+/**
+ * search_path - Searches for the full path of a cmd in the PATH env variable
+ * @commands: The command to search for
+ * @envp: The environment variables
+ * @status: The status of the search
+ *
+ * Return: void
+ */
 void search_path(char **commands, char **envp, int *status)
 {
 	char *full_path, *token, *path_env;

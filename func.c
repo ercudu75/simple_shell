@@ -8,40 +8,53 @@
  */
 void _execvep(char **commands, char **envp, int *status)
 {
+	char *full_path = NULL;
 	int pid;
 
-	pid = fork();
 
-	if (pid == 0)
+	if (access(commands[0], X_OK) == 0)
 	{
-		if (access(commands[0], X_OK) == 0)
-		{
-			execve(commands[0], commands, envp);
-			exit(0);
-		}
+		pid = fork();
 
-		search_path(commands, envp, status);
+		if (pid == 0)
+			execve(commands[0], commands, envp);
+		else
+			wait_child_process(status);
+	}
+	else if (search_path(commands[0], &full_path))
+	{
+		pid = fork();
+
+		if (pid == 0)
+			execve(full_path, commands, envp);
+		else
+			wait_child_process(status);
+
+		free(full_path);
 	}
 	else
 	{
-		wait_child_process(status);
-	}
+		*status = 127;
+		write_error(commands[0]);
+	};
 }
 
 /**
  * search_path - Searches for the full path of a cmd in the PATH env variable
- * @commands: The command to search for
- * @envp: The environment variables
- * @status: The status of the search
+ * @command: The command to search for
+ * @full_path: search for path
  *
  * Return: void
  */
-void search_path(char **commands, char **envp, int *status)
+int search_path(char *command, char **full_path)
 {
-	char *full_path, *token, *path_env;
+	char *token, *path_env;
 	int found = 0;
 
+
+
 	path_env = mygetenv("PATH");
+
 	if (path_env != NULL)
 	{
 		char *path_env_copy = strdup(path_env);
@@ -50,20 +63,22 @@ void search_path(char **commands, char **envp, int *status)
 
 		while (token != NULL && !found)
 		{
-			full_path = malloc(strlen(token) + strlen(commands[0]) + 2);
-			if (full_path != NULL)
+			*full_path = malloc(strlen(token) + strlen(command) + 2);
+			if (*full_path != NULL)
 			{
-				strcpy(full_path, token);
-				strcat(full_path, "/");
-				strcat(full_path, commands[0]);
+				strcpy(*full_path, token);
+				strcat(*full_path, "/");
+				strcat(*full_path, command);
 
-				if (access(full_path, X_OK) == 0)
+
+				if (access(*full_path, X_OK) == 0)
 				{
-					execve(full_path, commands, envp);
+
 					found = 1;
 				}
 
-				free(full_path);
+				if (!found)
+					free(*full_path);
 			}
 
 			token = strtok(NULL, ":");
@@ -72,12 +87,7 @@ void search_path(char **commands, char **envp, int *status)
 		free(path_env_copy);
 	}
 
-	if (!found)
-	{
-		*status = 127;
-		write_error(commands[0]);
-		exit(127);
-	}
+	return (found);
 }
 
 /**
@@ -109,24 +119,17 @@ void wait_child_process(int *status)
  */
 char *mygetenv(const char *path)
 {
-	int i, j;
-	int found;
+	int i;
+	int path_length = _strlen((char *) path);
 
 	for (i = 0; environ[i] != NULL; i++)
 	{
-		found = 1;
-		for (j = 0; path[j] != '\0'; j++)
+		if (!strncmp(path, environ[i], path_length))
 		{
-			if (path[j] != environ[i][j])
+			if (environ[i][path_length] == '=')
 			{
-				found = 0;
-				break;
+				return (environ[i] + path_length + 1);
 			}
-		}
-
-		if (found && environ[i][j] == '=')
-		{
-			return (environ[i] + j + 1);
 		}
 	}
 

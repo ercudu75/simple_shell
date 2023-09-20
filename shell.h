@@ -18,7 +18,7 @@ ssize_t read_command(char **line, size_t *size_line);
 /* execute command*/
 void execute_command_non_interactive(char *command, char **argv, int *status);
 void _execvep(char **commands, char **envp, int *status);
-void search_path(char **commands, char **envp, int *status);
+int search_path(char *command, char **full_path);
 void wait_child_process(int *status);
 char *mygetenv(const char *path);
 

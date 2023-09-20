@@ -17,22 +17,24 @@ void debut_shell(void)
 	{
 		nread = read_command(&line, &size_line);
 		if (nread == -1)
-		{
-			perror("getline");
-			free(line);
-			line = NULL;
-			exit(EXIT_FAILURE);
-		}
+			handle_getline_error(line);
 		commands = tokenize_string(line, " \n\t");
 		if (commands[0])
 		{
 			if (!_strcmp(commands[0], "exit"))
 			{
-				free_array(commands);
-				free(line);
-				line = NULL;
-				exit(EXIT_SUCCESS);
-				break;
+				if (commands[1])
+				{
+					int my_status = _atoi(commands[1]);
+
+					handle_custom_exit(my_status, commands, line, &status);
+				}
+				else
+				{
+					free(line);
+					free_array(commands);
+					exit(status);
+				}
 			}
 			else if (!_strcmp(commands[0], "env"))
 			{
@@ -40,9 +42,7 @@ void debut_shell(void)
 				status = 0;
 			}
 			else
-			{
 				_execvep(commands, envp, &status);
-			}
 		}
 		free_array(commands);
 		free(line);
@@ -74,6 +74,18 @@ void write_error(char *command)
 	write(STDERR_FILENO, "./hsh: 1: ", 10);
 	write(STDERR_FILENO, command, _strlen(command));
 	write(STDERR_FILENO, ": not found\n", 12);
+}
+/**
+ * write_exit_error - Writes an error message to STDERR
+ *
+ * @number: number
+ * Description: Writes an error message
+ */
+void write_exit_error(char *number)
+{
+	write(STDERR_FILENO, "./hsh: 1: exit: Illegal number: ", 32);
+	write(STDERR_FILENO, number, _strlen(number));
+	write(STDERR_FILENO, "\n", 1);
 }
 /**
  * free_array - Frees memory allocated for an array of strings.

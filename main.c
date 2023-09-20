@@ -44,9 +44,18 @@ void non_interactive_mode(char *token, int *status)
 	{
 		if (!_strcmp(single_command[0], "exit"))
 		{
-			free_array(single_command);
-			free(token);
-			exit(*status);
+			if (single_command[1])
+			{
+				int my_status = _atoi(single_command[1]);
+
+				handle_exit_status(my_status, single_command, &token, status);
+			}
+			else
+			{
+				free(token);
+				free_array(single_command);
+				exit(*status);
+			}
 		}
 		else if (!_strcmp(single_command[0], "env"))
 		{
@@ -84,7 +93,11 @@ char **tokenize_string(char *str, char *delimiters)
 		count++;
 		token = strtok(NULL, delimiters);
 	}
-	result[count] = NULL;
+	while (count < 20)
+	{
+		result[count] = NULL;
+		count++;
+	}
 
 	return (result);
 }

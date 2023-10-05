@@ -21,7 +21,7 @@ To start this i would recommand u read this ressources to start your own shell:
 
 - [Youtube Arabic](https://www.youtube.com/watch?v=d_lfRYsQDbo&list=PLpBdQFnmcLJVEVZitaTY9Jk-_Rlkh8l3F)
 
-Feel free to explore the code in this repository to get some ideas to code this project and remember do not clone this repo or kimba will catch you 😉.
+Feel free to explore the code in this repository to get some ideas on how to code this project and remember do not clone this repo or kimba will catch you 😉.
 
 ## Compilation
 
